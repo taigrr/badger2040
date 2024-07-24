@@ -114,7 +114,7 @@ func main() {
 	case "none":
 		// this option is useful if you want to preview the file without creating it
 	default:
-		log.Printf("error: invalid mode `%s`\n\n", outMode)
+		log.Printf("error: invalid outmode `%s`\n\n", outMode)
 		Usage()
 		return
 	}
@@ -275,7 +275,7 @@ func Usage() {
 	flag.PrintDefaults()
 	fmt.Fprintf(
 		flag.CommandLine.Output(),
-		"\nExamples:\n%s input.png -mode bin -ratio profile\n%s input.jpg -mode rice -ratio 128x128 -disable-dithering -show\n",
+		"\nExamples:\n%s input.png -outmode bin -ratio profile\n%s input.jpg -outmode rice -ratio 128x128 -disable-dithering -show\n",
 		os.Args[0],
 		os.Args[0],
 	)
