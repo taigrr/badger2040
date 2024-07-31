@@ -235,7 +235,7 @@ func ImgToBytes(x, y int, inputImg *image.Image) []byte {
 	// (vertical axis must be inner loop) for the badge layout
 	for i := 0; i < x; i++ {
 		for j := 0; j < y; j++ {
-			// grab dithered image point, determine if bit should be 1 or a 0
+			// grab image point, determine if bit should be 1 or a 0
 			r, g, b, _ := dst.At(x-1-i, j).RGBA()
 			if r+g+b == 0 {
 				// use bit shifting + integer division & modulo arithmetic to change
@@ -260,7 +260,7 @@ func ParseRatio(rstr string) (int, int, error) {
 	if err != nil {
 		return 0, 0, errors.Join(errors.New("error: could not parse x coordinate count"), err)
 	}
-	y, err := strconv.Atoi(pixels[0])
+	y, err := strconv.Atoi(pixels[1])
 	if err != nil {
 		return 0, 0, errors.Join(errors.New("error: could not parse y coordinate count"), err)
 	}
@@ -285,17 +285,29 @@ func Usage() {
 // PrintImg prints an `*` for each marked bit
 //
 // It writes to stderr so that it doesn't conflict with the base64 output
-func PrintImg(x, y int, imgBits []byte) {
-	for j := 0; j < x; j++ {
-		for i := y - 1; i >= 0; i-- {
-			offset := i*x + j
-			bit := imgBits[offset/8] & (1 << uint(7-offset%8))
-			if bit != 0 {
+func PrintImg(x, y int, imageBits []byte) {
+	// create a matrix of bools to represent the image pixels
+	matrix := make([][]bool, y)
+	for i := range matrix {
+		matrix[i] = make([]bool, x)
+	}
+	// unpack the bits into the matrix
+	for i := 0; i < y; i++ {
+		for j := 0; j < x; j++ {
+			index := (j*y + i) / 8
+			bit := uint(7 - (j*y+i)%8)
+			matrix[i][j] = (imageBits[index] & (1 << bit)) != 0
+		}
+	}
+	// print the matrix to stderr
+	for i := 0; i < y; i++ {
+		for w := x - 1; w >= 0; w-- {
+			if matrix[i][w] {
 				fmt.Fprint(os.Stderr, "*")
 			} else {
 				fmt.Fprint(os.Stderr, " ")
 			}
 		}
-		fmt.Fprint(os.Stderr, "\n")
+		fmt.Fprintln(os.Stderr)
 	}
 }
